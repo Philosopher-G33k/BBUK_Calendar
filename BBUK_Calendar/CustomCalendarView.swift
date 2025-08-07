@@ -139,18 +139,23 @@ struct CustomCalendarView: View {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 15) {
                             ForEach(years, id: \.self) { year in
                                 Button(action: {
-                                    // Preserve the current month and day when changing year
+                                    // Preserve the current month when changing year
                                     let currentMonthComponent = calendar.component(.month, from: currentMonth)
-                                    let currentDayComponent = calendar.component(.day, from: currentMonth)
                                     
                                     var dateComponents = DateComponents()
                                     dateComponents.year = year
                                     dateComponents.month = currentMonthComponent
-                                    dateComponents.day = currentDayComponent
+                                    dateComponents.day = 1 // Start with first day of month
                                     
                                     if let newDate = calendar.date(from: dateComponents) {
                                         withAnimation(.easeInOut(duration: 0.3)) {
                                             currentMonth = newDate
+                                            
+                                            // Auto-select the first eligible date in the new month/year
+                                            if let firstEligibleDate = getFirstEligibleDate(for: newDate) {
+                                                selectedDate = firstEligibleDate
+                                            }
+                                            
                                             showYearPicker = false
                                         }
                                     }
@@ -299,6 +304,26 @@ struct CustomCalendarView: View {
     private func isPastMonth(_ date: Date) -> Bool {
         let today = Date()
         return calendar.compare(date, to: today, toGranularity: .month) == .orderedAscending
+    }
+    
+    private func getFirstEligibleDate(for month: Date) -> Date? {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else {
+            return nil
+        }
+        
+        let firstOfMonth = monthInterval.start
+        let numberOfDaysInMonth = calendar.range(of: .day, in: .month, for: month)?.count ?? 0
+        
+        // Find the first non-past date in the month
+        for day in 1...numberOfDaysInMonth {
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: firstOfMonth) {
+                if !isPastDate(date) {
+                    return date
+                }
+            }
+        }
+        
+        return nil
     }
 }
 
