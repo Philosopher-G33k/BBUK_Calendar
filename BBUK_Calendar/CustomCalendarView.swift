@@ -132,6 +132,7 @@ struct CustomCalendarView: View {
                 if showYearPicker {
                     // Year picker - only show current and future years
                     let currentYear = calendar.component(.year, from: Date())
+                    let selectedYear = calendar.component(.year, from: currentMonth)
                     let years = Array(currentYear...(currentYear + 20))
                     
                     ScrollView {
@@ -156,11 +157,11 @@ struct CustomCalendarView: View {
                                 }) {
                                     Text(String(year))
                                         .font(.system(size: 18, weight: .regular))
-                                        .foregroundColor(year == currentYear ? .white : .black)
+                                        .foregroundColor(year == selectedYear ? .white : .black)
                                         .frame(width: 60, height: 40)
                                         .background(
                                             RoundedRectangle(cornerRadius: 8)
-                                                .fill(year == currentYear ? Color.blue : Color.clear)
+                                                .fill(year == selectedYear ? Color.blue : Color.clear)
                                         )
                                 }
                             }
